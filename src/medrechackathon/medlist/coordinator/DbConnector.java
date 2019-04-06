@@ -31,8 +31,28 @@ public class DbConnector {
 	 
 	        return conn;
 	    }
+	   public int checkPtSource(int id, String ehr) {
+	        String SQL = "SELECT count(*) from mrh2019_pt where \"PtId\"=" + 
+	        		id + 
+	        			" AND ehr='" +
+	        			ehr+ "'";
+	        int count = 0;
+	 
+	        try (Connection conn = connect();
+	                Statement stmt = conn.createStatement();
+	                ResultSet rs = stmt.executeQuery(SQL)) {
+	            rs.next();
+	            count = rs.getInt(1);
+	        } catch (SQLException ex) {
+	            System.out.println(ex.getMessage());
+	        }
+	 
+	        return count;
+	    }
+	 
+	 
 	   public int getPtFromCentralDb(Patient pt) {
-	        String SQL = "SELECT count(*) from mrh2019_pt where first_name='" + 
+	        String SQL = "SELECT count(*) from mrh2019_pt where first_name like '" + 
 	        		(pt.getName().get(0)).getGivenAsSingleString() + 
 	        			"' AND last_name='" +
 	        			(pt.getName().get(0)).getFamily().toString() +
@@ -51,6 +71,43 @@ public class DbConnector {
 	        return count;
 	    }
 	   
+	   public int getPtIdFromCentralDb(String firstName, String lastName) {
+	        String SQL = "SELECT \"PtId\" from mrh2019_pt where first_name like '" + 
+	        		firstName + 
+	        			"' AND last_name='" +
+	        			lastName +"'";
+	    
+	        int id=0;
+	        try (Connection conn = connect();
+	                Statement stmt = conn.createStatement();
+	                ResultSet rs = stmt.executeQuery(SQL)) {
+	            rs.next();
+	            id = rs.getInt(1);
+	        } catch (SQLException ex) {
+	            System.out.println(ex.getMessage());
+	        }
+	 
+	        return id;
+	    }	   
+	   
+	   public int getPtFromCentralDb(String firstName, String lastName) {
+	        String SQL = "SELECT count(*) from mrh2019_pt where first_name ilike '%" + 
+	        		firstName + 
+	        			"%' AND last_name='" +
+	        			lastName +"'";
+	        int count = 0;
+	 
+	        try (Connection conn = connect();
+	                Statement stmt = conn.createStatement();
+	                ResultSet rs = stmt.executeQuery(SQL)) {
+	            rs.next();
+	            count = rs.getInt(1);
+	        } catch (SQLException ex) {
+	            System.out.println(ex.getMessage());
+	        }
+	 
+	        return count;
+	    }
 	   
 	   public void insertPtSource(int pt_id, String ehr, Patient pt, String base_url) {
 	        String SQL = "INSERT INTO mrh2019_pt_sources(source_id,\"PtId\",ehr,id,base_url) "
