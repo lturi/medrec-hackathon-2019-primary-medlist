@@ -1,5 +1,10 @@
 package medrechackathon.medlist.coordinator;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.hl7.fhir.dstu3.model.Base;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Patient;
@@ -10,7 +15,14 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 
 public class EHR2 implements FHIRClient {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+		
+	String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+	String appConfigPath = rootPath + "../fhirpit.properties";
+	
+	Properties props = new Properties();
+	props.load(new FileInputStream(appConfigPath));
+	
 	FhirContext ctx = FhirContext.forDstu3();
 	String serverBase1 = "https://fire-pit.mihin.org/po-ehr-1/baseDstu3";
 
@@ -19,8 +31,8 @@ public class EHR2 implements FHIRClient {
 	//String serverBaseOpenEMR = "https://fire-pit.mihin.org/po-ehr-2/baseDstu3";
 	 
 	// Create an HTTP basic auth interceptor
-	String username = "";
-	String password = "";
+	String username = props.getProperty("fhir_pit_user");
+	String password = props.getProperty("fhir_pit_pw");
 	IClientInterceptor authInterceptor = new BasicAuthInterceptor(username, password);
 	IGenericClient client = ctx.newRestfulGenericClient(serverBase1);
 	client.registerInterceptor(authInterceptor);
