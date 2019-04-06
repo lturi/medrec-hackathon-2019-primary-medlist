@@ -37,5 +37,15 @@
   		<artifactId>hapi-fhir-client</artifactId>
   		<version>3.6.0</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.mongodb</groupId>
+  		<artifactId>mongo-java-driver</artifactId>
+  		<version>3.10.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>ca.uhn.hapi.fhir</groupId>
+  		<artifactId>hapi-fhir-structures-dstu2</artifactId>
+  		<version>3.6.0</version>
+  	</dependency>
   </dependencies>
 </project>
