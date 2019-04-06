@@ -14,7 +14,7 @@ import ca.uhn.fhir.rest.client.api.IClientInterceptor;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 
-public class EHR2 implements FHIRClient {
+public class EHR2 {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
 	String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
@@ -46,8 +46,28 @@ public class EHR2 implements FHIRClient {
 	      .encodedJson()
 	      .execute();
 	 
-	//Patient p = results.castToResource(Base b);
+	Patient pt = client
+		      .read()
+		      .resource(Patient.class)
+		      .withId((results.getEntryFirstRep()).getResource().getId())
+		      .execute();
 	
-	System.out.println(ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(results));
+	//Patient p = results.castToResource(Base b);
+	System.out.println("First Name: "+(pt.getName().get(0)).getGivenAsSingleString());
+	System.out.println("Last Name: " + (pt.getName().get(0)).getFamily().toString());
+	System.out.println("ID: " + pt.getIdBase());
+	System.out.println("DOB: " + pt.getBirthDate().toString());
+	
+	DbConnector db = new DbConnector();
+	db.connect();
+	int count = db.getPtFromCentralDb(pt);
+	if (count == 1) {
+		System.out.println((pt.getName().get(0)).getGivenAsSingleString() + "is in the central db");
+	} else {
+		db.insertPt(pt);
+		System.out.println((pt.getName().get(0)).getGivenAsSingleString() + " has been added to the central db");
+	}
+	
+	//System.out.println(ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(results));
 	}
 }
