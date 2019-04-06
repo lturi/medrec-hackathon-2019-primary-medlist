@@ -62,9 +62,10 @@ public class EHR2 {
 	db.connect();
 	int count = db.getPtFromCentralDb(pt);
 	if (count == 1) {
-		System.out.println((pt.getName().get(0)).getGivenAsSingleString() + "is in the central db");
+		System.out.println((pt.getName().get(0)).getGivenAsSingleString() + " is in the central db");
 	} else {
-		db.insertPt(pt);
+		int pt_id = db.insertPt(pt);
+		db.insertPtSource(pt_id, "po-ehr-1", pt, serverBase1);
 		System.out.println((pt.getName().get(0)).getGivenAsSingleString() + " has been added to the central db");
 	}
 	

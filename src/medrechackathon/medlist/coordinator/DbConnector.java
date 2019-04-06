@@ -14,7 +14,7 @@ import org.hl7.fhir.dstu3.model.Patient;
 
 public class DbConnector {
 
-	private final String url = "jdbc:postgresql://localhost/";
+	private final String url = "jdbc:postgresql://localhost/mrh2019";
 	private final String user = "postgres";
 	private final String password = "";
 	private final DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -50,11 +50,12 @@ public class DbConnector {
 	 
 	        return count;
 	    }
-	 
-	   public void insertPt(Patient pt) {
-	        String SQL = "INSERT INTO mrh2019pt(PtId, first_name,last_name,dob,create_date) "
+	   
+	   
+	   public void insertPtSource(int pt_id, String ehr, Patient pt, String base_url) {
+	        String SQL = "INSERT INTO mrh2019_pt_sources(source_id,\"PtId\",ehr,id,base_url) "
 	                + "VALUES(?,?,?,?,?)";
-	        String nextVal = "SELECT nextval(pt_seq)";
+	        String nextVal = "SELECT nextval('pt_source_seq')";
 	        String nextId = "";
 	        long id = 0;
 	 
@@ -64,20 +65,21 @@ public class DbConnector {
 	                ResultSet rs = stmt.executeQuery(nextVal)) {
 	            rs.next();
 	            nextId = rs.getString(1);
+	            System.out.println("next id = " + nextId);
 	        } catch (SQLException ex) {
 	            System.out.println(ex.getMessage());
 	        }	
 
-        try (Connection conn = connect();
+       try (Connection conn = connect();
 
 	            PreparedStatement pstmt = conn.prepareStatement(SQL,
 	                Statement.RETURN_GENERATED_KEYS)) {
 	              Date date = new Date();
-	            pstmt.setString(1, (nextId));
-	            pstmt.setString(2, (pt.getName().get(0)).getGivenAsSingleString());
-	            pstmt.setString(3, (pt.getName().get(0)).getFamily().toString());
-	            pstmt.setString(4, dateFormat.format(pt.getBirthDate()));
-	        	pstmt.setString(5, dateFormat.format(date));
+	            pstmt.setInt(1, Integer.parseInt(nextId));
+	            pstmt.setInt(2, pt_id);
+	            pstmt.setString(3, ehr);
+	            pstmt.setString(4, pt.getIdBase());
+	        	pstmt.setString(5, base_url);
 	 
 	            int affectedRows = pstmt.executeUpdate();
 	            System.out.println(affectedRows);
@@ -96,6 +98,57 @@ public class DbConnector {
 	            System.out.println(ex.getMessage());
 	        }
 	       // return id;
+	    }
+	   
+	   
+	 
+	   public int insertPt(Patient pt) {
+	        String SQL = "INSERT INTO mrh2019_pt(\"PtId\", first_name,last_name,dob,create_date) "
+	                + "VALUES(?,?,?,?,?)";
+	        String nextVal = "SELECT nextval('pt_seq')";
+	        String nextId = "";
+	        int id = 0;
+	 
+	        try (Connection conn = connect();
+		        	
+	                Statement stmt = conn.createStatement();
+	                ResultSet rs = stmt.executeQuery(nextVal)) {
+	            rs.next();
+	            nextId = rs.getString(1);
+	            System.out.println("next id = " + nextId);
+	        } catch (SQLException ex) {
+	            System.out.println(ex.getMessage());
+	        }	
+
+        try (Connection conn = connect();
+
+	            PreparedStatement pstmt = conn.prepareStatement(SQL,
+	                Statement.RETURN_GENERATED_KEYS)) {
+	              Date date = new Date();
+	            pstmt.setInt(1, Integer.parseInt(nextId));
+	            pstmt.setString(2, (pt.getName().get(0)).getGivenAsSingleString());
+	            pstmt.setString(3, (pt.getName().get(0)).getFamily().toString());
+	            pstmt.setString(4, dateFormat.format(pt.getBirthDate()));
+	        	pstmt.setString(5, dateFormat.format(date));
+	 
+	            int affectedRows = pstmt.executeUpdate();
+	            System.out.println(affectedRows);
+	            // check the affected rows 
+	            if (affectedRows > 0) {
+	                // get the ID back
+	                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+	                    if (rs.next()) {
+	                        id = rs.getInt(1);
+	                    }
+	                } catch (SQLException ex) {
+	                    System.out.println(ex.getMessage());
+	                }
+	            } 
+	        } catch (SQLException ex) {
+	            System.out.println(ex.getMessage());
+	        }
+        System.out.println("ID entered is: " +id);
+	        return id;
 	    }
 	 public static void main (String[] args) {
 	//	 DbConnector dbc= new DbConnector();
